@@ -152,7 +152,7 @@ kmeans_obj  # prints the result of the k-means algorithm
 head(kmeans_obj) # prints the results of each output from the k-means algorithm
 ```
 
-### Modeling of Clusters {.tabset}
+### Modeling and Results of Clusters {.tabset}
 #### Graduation Rate vs Students in the Top 10% of Class
 
 ```{r}
@@ -177,6 +177,8 @@ fig1 <- plot_ly(plotting, # create a plotly graphic
 fig1 
 ```
 
+The two universities that stand out with relatively high graduation rates and percentages of students in the top 10% of their class, with low tuitions around 10k or less are Georgia Tech and UNC at Chapel Hill.  
+
 #### Expenditure Per Student vs Student to Faculty Ratio
 
 ```{r}
@@ -185,7 +187,7 @@ fig2 <- plot_ly(plotting, # create a plotly graphic
                mode="markers",
                symbol = ~clusters,  # make the point shape based on the cluster column
                x = ~log(ExpenditurePerStudent), # make x axis Games Started column
-               y = ~StudentFacultyRatio, # make y axis FieldGoals column
+               y = ~log(StudentFacultyRatio), # make y axis FieldGoals column
                color = ~tuition,  # color the points based on the tuition column
                symbols = c(0,1,5),  # make the symbols, open circle, square, and triangle
                text = ~paste('College:',College,  # hover text for college and tuition
@@ -194,6 +196,8 @@ fig2 <- plot_ly(plotting, # create a plotly graphic
 
 fig2 
 ```
+
+The two universities that stand out with relatively high expenditures per student and low student to faculty ratios, with low tuitions around 10k or less are Creighton University and UNC at Chapel Hill.  
 
 #### Graduation Rate vs Donating Alumni Percentage
 ```{r}
@@ -212,18 +216,20 @@ fig3 <- plot_ly(plotting, # create a plotly graphic
 fig3 
 ```
 
-### Modeling Results 
-Overall, there appear to be two universities that stand out with low tuition in the higher quality school cluster, cluster 2.  The first university is the University of North Carolina at Chapel Hill, a larger, public state school.  Particularly in the first graphic, UNC stands out as the school with the lowest tuition and the largest combination for graduation rate and percentage of students in the top 10% of their class.  The school also has a relatively low student-faculty ratio and high expenditure per student as depicted in the second graph.  The second university if Mary Baldwin University, a smaller, private school. Mary Baldwin stands out particularly in the third graphic with a high graduation rate and a high percentage of alumni who donate.  The school is also notable in the second graphic with a low student-faculty ratio and relatively high expenditure per student.  
+The only university which stands out with a high graduation rate and a high percentage of alumni who donate is Mary Baldwin University.  This is likely because the metric "DonatingAlumniPercentage" will be high for smaller private schools which require private funding.  
 
 ## Evaluation
+- prof wright said to look at explained variation and also just how the clustering appears in general from the graphics. he said to find a graphic that models the clusters well to indicate that the clustering algorithm worked (im thinking the first plot shows this the best)
 
 ## Fairness Assessment 
 
 ## Conclusions 
-- may want to use modeling results in conclusion and just have the graphs as the method results 
+Overall, the University of North Carolina at Chapel Hill appears to be university that stands out among the rest as high quality and low cost.  UNC at Chapel Hill has a graduation rate of 83% and a percentage of students coming from the top 10% of their class at 75% which indicates the high academic standing of its student body.  Further, the school focuses many resources on each of its students with an expenditure on each student of around $16,000 and a low student to faculty ratio of roughly 9 to 1.   While its percentage of donating alumni is only 23%, this is likely because it is a public school and thus has state funding, as opposed to smaller private schools which rely more heavily on alumni donations.  Finally, UNC at Chapel Hill has a tuition of \$8,400 per semester which is lower than many of the other universities in this high quality cluster.  
+
 
 ## Future Work 
--limits: small data size -> use more universities in US (only uses 777)
+In future work, there are some additions to the data that could be useful.  First, the data set only contains information for 777 universities in the United States.  Given that there are roughly 4,000 degree granting universities in the US according to the US Department of Education, this data set could be expanded greatly to both better our clustering algorithm with more information and introduce other best value schools which have not been considered (https://www.usnews.com/education/best-colleges/articles/how-many-universities-are-in-the-us-and-why-that-number-is-changing).  Second, the data set only records out-of-state tuition so when looking for low cost schools, only out-of-state tuition is considered.  Given that public schools offer a, usually much lower, in-state cost, this could alter our evaluation of low cost schools.  Particularly on an individual basis, some schools might be low-cost to those living in the respective school's state while they are high-cost to those living outside of the state.  Finally, this data was collected in 2019 so it is outdated for the current 2021 year.  Specifically with tuition cost increasing significantly each year, the tuition variable needs to be updated in order for the analysis to be applicable for today's students.  
+
 
 
 
