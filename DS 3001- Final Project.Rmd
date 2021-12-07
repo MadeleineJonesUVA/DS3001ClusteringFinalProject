@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
 ```
 
 ```{r}
-library(tidyverse)
+library(tidyverse)  # load libraries 
 library(caret)
 library(class)
 library(plotly)
@@ -21,7 +21,7 @@ library(RColorBrewer)
 library(ROCR)
 library(MLmetrics)
 library(ggpubr)
-library(e1071)  # load all of the libraries needed for the lab
+library(e1071)  
 library(plotly)
 library(htmltools)
 library(devtools)
@@ -30,35 +30,35 @@ library(DT)
 ```
 
 ## Question and Background Information 
-What are the best value colleges? We will be looking at tuition and other metrics such as graduation rates, etc to determine which colleges are the best value.
+One of the biggest choices a student will make in their academic career is where they attend college.  While there are many factors that go into making a college experience enjoyable or successful, one commonly used method of evaluating universities as a whole is "best value." According to U.S. News, best value schools are those that are "above average academically and cost considerably less than many other schools" (https://www.usnews.com/education/best-colleges/articles/best-value-schools-faq).  There are many resources that will rank universities based on their quality of program and cost of attendance.  For example, the U.S. News reports Yale University, Massachusetts Institute of Technology, and Harvard University as the top 3 best value schools as of this year (https://www.usnews.com/best-colleges/rankings/national-universities/best-value).  While short descriptions are given as to why these schools are ranked so highly, the raw data and methodology is not readily available.  Therefore, we will be using the data set "US College Data" in order to directly evaluate what universities are of the best value based on different metrics such as graduation rates, student to faculty ratios, and out-of-state tuition (https://www.kaggle.com/yashgpt/us-college-data).  
 
 ## Exploratory Data Analysis 
 ### Read and Clean the Data 
 ```{r}
-data<- read.csv("/Users/audreyhimes/Documents/UVA F21/DS 3001/DS-3001-new/DS3001ClusteringFinalProject/College_Data.csv")  # reading in the data set 
+data<- read.csv("/Users/mj/Desktop/2021 Fall/DS 3001/DS-3001/Final Project/College_Data.csv")  # reading in the data set 
 
 data <- data %>% rename(College = X, AppsRecieved = Apps, AppsAccepted = Accept, NewStudentsEnrolled = Enroll, Top10Percent = Top10perc, Top25Percent = Top25perc, FullTimeUndergrads = F.Undergrad, PartTimeUndergrads = P.Undergrad, OutStateTuition = Outstate, RoomBoardCosts = Room.Board, BooksCost = Books, PersonalSpendings = Personal, FacultyPhDPercentage = PhD, FacultyTerminalPercentage = Terminal, StudentFacultyRatio = S.F.Ratio, DonatingAlumniPercentage = perc.alumni, ExpenditurePerStudent = Expend, GraduationRate = Grad.Rate)  # relabel the columns with more understandable names
 
 data$Private <- as.factor(data$Private)
 
-data$Private<-as.factor(ifelse(data$Private == "Yes",1,0))
+data$Private<-as.factor(ifelse(data$Private == "Yes",1,0))  # make private vs public school a factor variable
 
-data <- data[complete.cases(data), ]
+data <- data[complete.cases(data), ]  # remove missing data rows
 
-data[which(data$GraduationRate > 100), "GraduationRate"] <- 100
+data[which(data$GraduationRate > 100), "GraduationRate"] <- 100  # change graduation rates over 100 to 100
 
 str(data)
 ```
 
-### Numeric Variable Correlations with Salary
+### Numeric Variable Correlations with Tuition
 
 ```{r}
-numeric <- names(select_if(data, is.numeric))  # select the column labels from the numeric columns
+numeric <- names(select_if(data, is.numeric))  # select the numeric column labels
 numericdata <- data[,numeric]  # create a table of the numeric data columns
-tuition<- numericdata[,8]  # save salary as its own vector for comparison
-numericvars <- numericdata[,-8]  # save other numeric variables in table for comparison
+tuition<- numericdata[,8]  # save tuition as its own vector 
+numericvars <- numericdata[,-8]  # save other numeric variables in table
 
-cors = data.frame(CorrelationWithTuition = apply(numericvars, 2, function(x) cor(tuition, x)))  # apply the correlation function to the salary vector and all columns of the numeric variable table to determine which variables are most correlated to salary
+cors = data.frame(CorrelationWithTuition = apply(numericvars, 2, function(x) cor(tuition, x)))  # apply the correlation function to the tuition vector and all columns of the numeric variable table to determine which variables are most correlated to tuition
 cors <- arrange(cors, -abs(CorrelationWithTuition))
 datatable(cors)
 ```
@@ -69,6 +69,7 @@ Noting, however, that room and board is another cost to the student rather than 
 
 ### Highly Correlated Variable Plots with Tuition
 ```{r}
+# plot the variables with tuition to visualize direction and strengths of correlations
 scatter1<-ggplot(data=data, mapping= aes(tuition,ExpenditurePerStudent)) + geom_point()+ ggtitle("Expenditure Per Student") + theme(axis.title.x = element_text(size = 8), axis.title.y = element_text(size = 9),plot.title = element_text(size = 10))
 
 scatter2<-ggplot(data=data, mapping= aes(tuition,GraduationRate)) + geom_point()+ ggtitle("Graduation Rate")+ theme(axis.title.x = element_text(size = 8), axis.title.y = element_text(size = 9),plot.title = element_text(size = 10))
@@ -116,9 +117,9 @@ explained_variance = function(data_in, k){
   var_exp  
 }
 
-explained_var_list = sapply(1:20, explained_variance, data_in = standardized)  # run the explained_variance function with the numeric variable data and cluster numbers 1 through 10
+explained_var_list = sapply(1:20, explained_variance, data_in = standardized)  # run the explained_variance function with the numeric variable data and cluster numbers 1 through 20
 
-elbow_data = data.frame(k = 1:20, Explained_Variance= explained_var_list)  # put explained_variance output in dataframe with corresponding k value to use for plotting
+elbow_data = data.frame(k = 1:20, Explained_Variance= explained_var_list)  # put explained_variance output in data frame with corresponding k value to use for plotting
 
 #Create a elbow chart of the output of the explained_variance function run
 ggplot(elbow_data,   # create a ggplot using the elbow chart data
@@ -168,7 +169,7 @@ kmeans_obj = kmeans(standardized, centers = 3, # implements the k-means method w
 
 # kmeans_obj  # prints the result of the k-means algorithm 
 
-head(kmeans_obj) # prints the results of each output from the k-means algorithm
+kmeans_obj # prints the results of each output from the k-means algorithm
 ```
 
 ### Modeling and Results of Clusters {.tabset}
@@ -177,16 +178,16 @@ head(kmeans_obj) # prints the results of each output from the k-means algorithm
 ```{r}
 clusters = as.factor(kmeans_obj$cluster)  # converts the cluster variable to factor rather than numeric so that when graphing they can be used as categories
 
-plotting <- data.frame(corvars, tuition, clusters)  # combine the numeric variables and the salary data into a data frame 
+plotting <- data.frame(corvars, tuition, clusters)  # combine the numeric variables and the tuition data into a data frame 
 
-plotting <- data.frame(plotting, College = data$College)  # combine the numeric variables and salary data with the player names column
+plotting <- data.frame(plotting, College = data$College)  # combine the data with college names
 
 fig1 <- plot_ly(plotting, # create a plotly graphic
                type = "scatter",  # make it a scatterplot 
                mode="markers",
                symbol = ~clusters,  # make the point shape based on the cluster column
-               x = ~GraduationRate, # make x axis Games Started column
-               y = ~Top10Percent, # make y axis FieldGoals column
+               x = ~GraduationRate, # make x axis grad rate column
+               y = ~Top10Percent, # make y axis top 10% column
                color = ~tuition,  # color the points based on the tuition column
                symbols = c(0,1,5),  # make the symbols, open circle, square, and triangle
                text = ~paste('College:',College,  # hover text for college and tuition
@@ -208,8 +209,8 @@ fig2 <- plot_ly(plotting, # create a plotly graphic
                type = "scatter",  # make it a scatterplot 
                mode="markers",
                symbol = ~clusters,  # make the point shape based on the cluster column
-               x = ~log(ExpenditurePerStudent), # make x axis Games Started column
-               y = ~log(StudentFacultyRatio), # make y axis FieldGoals column
+               x = ~log(ExpenditurePerStudent), # set x and y axis data
+               y = ~log(StudentFacultyRatio), 
                color = ~tuition,  # color the points based on the tuition column
                symbols = c(0,1,5),  # make the symbols, open circle, square, and triangle
                text = ~paste('College:',College,  # hover text for college and tuition
@@ -230,8 +231,8 @@ fig3 <- plot_ly(plotting, # create a plotly graphic
                type = "scatter",  # make it a scatterplot 
                mode="markers",
                symbol = ~clusters,  # make the point shape based on the cluster column
-               x = ~GraduationRate, # make x axis Games Started column
-               y = ~DonatingAlumniPercentage, # make y axis FieldGoals column
+               x = ~GraduationRate, #  set x and y axis data
+               y = ~DonatingAlumniPercentage, 
                color = ~tuition,  # color the points based on the tuition column
                symbols = c(0,1,5),  # make the symbols, open circle, square, and triangle
                text = ~paste('College:',College,  # hover text for college and tuition
@@ -252,8 +253,8 @@ fig4 <- plot_ly(plotting, # create a plotly graphic
                type = "scatter",  # make it a scatterplot 
                mode="markers",
                symbol = ~clusters,  # make the point shape based on the cluster column
-               x = ~log(GraduationRate), # make x axis Games Started column
-               y = ~log(StudentFacultyRatio), # make y axis FieldGoals column
+               x = ~log(GraduationRate),  # set x and y axis data
+               y = ~log(StudentFacultyRatio), 
                color = ~tuition,  # color the points based on the tuition column
                symbols = c(0,1,5),  # make the symbols, open circle, square, and triangle
                text = ~paste('College:',College,  # hover text for college and tuition
@@ -273,22 +274,33 @@ Below, see the highlighted points for Creighton University, Mary Baldwin College
 - prof wright said to look at explained variation and also just how the clustering appears in general from the graphics. he said to find a graphic that models the clusters well to indicate that the clustering algorithm worked (im thinking the first plot shows this the best)
 
 ### Variance Explained
-The total variance explained by the model with 3 clusters is 0.451. Variance explained is a measure of inter-cluster variance and total variance (inter and intra cluster variance). So, a value of closer to 1 indicates that the clusters are both more tightly packed and further apart. 
+The total variance explained by the model with 3 clusters is 0.451. The variance explained is a measure of how much of the overall variance within the data is accounted for by the clusters by dividing the inter-cluster variance by the total variance, both intra and inter-variance.  Therefore, a value closer to 1 indicates clusters that are more tightly packed and further apart from each other while a value closer to 0 indicates clusters that are less packed and distinctive.  The value of 0.451 indicates that there is variance in the data that our model does not account for, and that our model could benefit from additional variables in the clustering process.  However, the explained variance is large enough to suggest some benefit to classifying universities as poor, average, and high quality.  
+
+The Inter-Cluster Variance is: 
 ```{r}
 # Evaluate the quality of the clustering
 # Inter-cluster variance
-num_data = kmeans_obj$betweenss
+(num_data = kmeans_obj$betweenss)
 
+```
+
+The Total Variance is: 
+```{r}
 # Total variance
-denom_data = kmeans_obj$totss
+(denom_data = kmeans_obj$totss)
+```
 
+Therefore, the Variance Explained by our model is: 
+```{r}
 # Variance accounted for by clusters.
 (var_exp = num_data / denom_data)
 ```
 
+### Graph Evaluation
+Looking at the graphics, in order to see benefits of our clustering, we are looking for distinct groupings of universities in clusters 1, 2, and 3.  In our graphs, this appears as groupings of square, circle, and diamond points.  In all graphics, the cluster 2 observations are at the "front" of the data, with better values, cluster 1 observations are in the middle of the data, with average values, and cluster 3 observations are at the "back" of the data, with poorer values.  While there is overlap between the clusters, there is an overall distinct region for each of the cluster types, therefore suggesting that the clustering algorithm is effective.  
 
 ## Fairness Assessment 
-Our dataset does not include any protected classes. It is very likely that, because each observation is representing a different college or university, there exists data on protected classes but it has already been omitted from our dataset. For example, colleges have diversity statistics such as the breakdown of students by race/ethnicity as well as gender. 
+Our data set does not include any protected classes. It is very likely that, because each observation is representing a different college or university, there exists data on protected classes but it has already been omitted from our dataset. For example, colleges have diversity statistics such as the breakdown of students by race/ethnicity as well as gender. 
 While this certainly makes our analysis process straightforward, we need to be cautious because it is possible that a protected class is inherently built into the features that we have used in our model. Essentially, a feature in our dataset such as personal spending could already be impacted by a protected class. However, because the dataset does not include any protected classes, we have no way of knowing whether there is any correlation between the features and a protected class. 
 Nevertheless, in our case while it is important to keep these cautions in mind, we do not think that there is any reason for extreme concern about the potential for protected classes. 
 
@@ -298,7 +310,6 @@ Overall, the University of North Carolina at Chapel Hill appears to be universit
 
 ## Future Work 
 In future work, there are some additions to the data that could be useful.  First, the data set only contains information for 777 universities in the United States.  Given that there are roughly 4,000 degree granting universities in the US according to the US Department of Education, this data set could be expanded greatly to both better our clustering algorithm with more information and introduce other best value schools which have not been considered (https://www.usnews.com/education/best-colleges/articles/how-many-universities-are-in-the-us-and-why-that-number-is-changing).  Second, the data set only records out-of-state tuition so when looking for low cost schools, only out-of-state tuition is considered.  Given that public schools offer a, usually much lower, in-state cost, this could alter our evaluation of low cost schools.  Particularly on an individual basis, some schools might be low-cost to those living in the respective school's state while they are high-cost to those living outside of the state.  Finally, this data was collected in 2019 so it is outdated for the current 2021 year.  Specifically with tuition cost increasing significantly each year, the tuition variable needs to be updated in order for the analysis to be applicable for today's students.  
-
 
 
 
